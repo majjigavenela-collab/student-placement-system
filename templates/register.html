@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Student Account | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'register' %}
+    {% include 'navbar.html' %}
+
+    <main class="container auth-container">
+      <section class="card auth-card">
+        <h1>Create Student Account</h1>
+        <p class="subtitle">Register to track your profile and predict your placement prospects.</p>
+
+        {% with messages = get_flashed_messages() %}
+          {% for message in messages %}
+            <div class="flash">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" required placeholder="e.g. John Doe" />
+          </div>
+          <div class="form-group">
+            <label for="email">College / Personal Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required placeholder="student@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password (at least 6 characters)</label>
+            <input type="password" id="password" name="password" minlength="6" autocomplete="new-password" required placeholder="••••••••" />
+          </div>
+          <button type="submit" class="button button-lg button-block">Register Account</button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Already have an account? <a href="/login">Log in here</a></p>
+          <p><a href="/">← Back to home</a></p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

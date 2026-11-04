@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Placement Prediction | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'prediction' %}
+    {% include 'navbar.html' %}
+
+    <main class="container">
+      {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <div class="page-header">
+        <div>
+          <h1>Machine Learning Placement Prediction</h1>
+          <p class="subtitle">Predict your campus placement outcome using our trained machine learning pipeline and your student profile data.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/history" class="button button-secondary">View History</a>
+          <a href="/dashboard" class="button button-secondary">Dashboard</a>
+        </div>
+      </div>
+
+      <!-- Handle profile status -->
+      {% if profile_status and not profile_status.is_complete %}
+        <div class="card alert alert-warning">
+          <div class="alert-content">
+            <strong>⚠️ Incomplete Profile Detected ({{ profile_status.percent }}% complete):</strong>
+            <p>Missing fields: {{ profile_status.missing_fields|join(', ') }}. For the most accurate prediction, please complete your profile first.</p>
+          </div>
+          <a href="/profile" class="button button-sm">Complete Profile</a>
+        </div>
+      {% elif profile_status and profile_status.is_complete %}
+        <div class="card alert alert-info">
+          <div class="alert-content">
+            <strong>✓ Loaded From Saved Profile:</strong>
+            <p>Form fields below have been pre-filled with your saved profile metrics. You can predict directly or modify fields to run "what-if" simulations.</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Prediction Result Section -->
+      {% if result %}
+        <section class="card result-card {% if result == 'Placed' %}result-placed{% else %}result-not-placed{% endif %}">
+          <div class="result-header">
+            <div>
+              <span class="result-tag">Prediction Outcome</span>
+              <h2 class="result-title">
+                Status:
+                {% if result == 'Placed' %}
+                  <span class="badge badge-success badge-lg">Placed</span>
+                {% else %}
+                  <span class="badge badge-danger badge-lg">Not Placed</span>
+                {% endif %}
+              </h2>
+            </div>
+            <div class="result-probs">
+              <div class="prob-box">
+                <span class="prob-num">{{ probability }}%</span>
+                <span class="prob-label">Placement Probability</span>
+              </div>
+              <div class="prob-box">
+                <span class="prob-num">{{ confidence }}%</span>
+                <span class="prob-label">Model Confidence</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-explanation">
+            <h3>Analysis &amp; Explanation</h3>
+            <p class="explanation-summary">{{ explanation.summary }}</p>
+
+            <div class="explanation-columns">
+              {% if explanation.strengths %}
+                <div class="exp-col strengths-col">
+                  <h4>Key Strengths</h4>
+                  <ul>
+                    {% for item in explanation.strengths %}
+                      <li>✓ {{ item }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
+              {% if explanation.improvements %}
+                <div class="exp-col improvements-col">
+                  <h4>Recommended Areas for Improvement</h4>
+                  <ul>
+                    {% for item in explanation.improvements %}
+                      <li>⚠️ {{ item }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <a href="/history" class="button button-accent">View in Prediction History →</a>
+            <a href="/skill-gap" class="button">Explore Skill Gap Analysis →</a>
+          </div>
+        </section>
+      {% endif %}
+
+      <!-- Prediction Form -->
+      <section class="card form-card">
+        <div class="form-header-flex">
+          <h2>Placement Prediction Form</h2>
+          {% if has_saved_profile %}
+            <span class="badge badge-info">Profile Data Synced</span>
+          {% endif %}
+        </div>
+        <p class="text-muted">Review the parameters below and submit to calculate placement probability.</p>
+
+        {% set form_data = form_data|default({}) %}
+
+        <form method="POST" action="/prediction">
+          <div class="form-section-title">
+            <h3>1. Academic Factors</h3>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="CGPA">CGPA (0.0 – 10.0) <span class="required">*</span></label>
+              <input type="number" id="CGPA" name="CGPA" min="0" max="10" step="0.01" value="{{ form_data.get('CGPA', '') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="backlogs">Active Backlogs <span class="required">*</span></label>
+              <input type="number" id="backlogs" name="backlogs" min="0" step="1" value="{{ form_data.get('backlogs', '0') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="10th_Percentage">10th Percentage (0 – 100) <span class="required">*</span></label>
+              <input type="number" id="10th_Percentage" name="10th_Percentage" min="0" max="100" step="0.1" value="{{ form_data.get('10th_Percentage', '') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="12th_Percentage">12th Percentage (0 – 100) <span class="required">*</span></label>
+              <input type="number" id="12th_Percentage" name="12th_Percentage" min="0" max="100" step="0.1" value="{{ form_data.get('12th_Percentage', '') }}" required />
+            </div>
+          </div>
+
+          <div class="form-section-title">
+            <h3>2. Projects &amp; Credentials</h3>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="Major_Projects">Major Projects <span class="required">*</span></label>
+              <input type="number" id="Major_Projects" name="Major_Projects" min="0" step="1" value="{{ form_data.get('Major_Projects', '') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="Mini_Projects">Mini Projects <span class="required">*</span></label>
+              <input type="number" id="Mini_Projects" name="Mini_Projects" min="0" step="1" value="{{ form_data.get('Mini_Projects', '') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="Workshops_Certifications">Workshops / Certifications <span class="required">*</span></label>
+              <input type="number" id="Workshops_Certifications" name="Workshops_Certifications" min="0" step="1" value="{{ form_data.get('Workshops_Certifications', '') }}" required />
+            </div>
+          </div>
+
+          <div class="form-section-title">
+            <h3>3. Practical Experience &amp; Competencies</h3>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="Skills">Technical Skills Rating (0 – 10) <span class="required">*</span></label>
+              <input type="number" id="Skills" name="Skills" min="0" max="10" step="1" value="{{ form_data.get('Skills', '') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="Communication_Skill_Rating">Communication Skill Rating (0.0 – 5.0) <span class="required">*</span></label>
+              <input type="number" id="Communication_Skill_Rating" name="Communication_Skill_Rating" min="0" max="5" step="0.1" value="{{ form_data.get('Communication_Skill_Rating', '') }}" required />
+            </div>
+
+            <div class="form-group">
+              <label for="Internship">Internship Experience <span class="required">*</span></label>
+              <select id="Internship" name="Internship" required>
+                <option value="Yes" {% if form_data.get('Internship') == 'Yes' %}selected{% endif %}>Yes</option>
+                <option value="No" {% if form_data.get('Internship') == 'No' %}selected{% endif %}>No</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="Hackathon">Hackathon Participation <span class="required">*</span></label>
+              <select id="Hackathon" name="Hackathon" required>
+                <option value="Yes" {% if form_data.get('Hackathon') == 'Yes' %}selected{% endif %}>Yes</option>
+                <option value="No" {% if form_data.get('Hackathon') == 'No' %}selected{% endif %}>No</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="button button-lg button-accent">⚡ Run Placement Prediction</button>
+            <a href="/prediction" class="button button-lg button-secondary">Reset to Saved Profile</a>
+          </div>
+        </form>
+      </section>
+
+      <div class="bottom-nav">
+        <a href="/dashboard">← Back to Dashboard</a>
+        <a href="/history">View Prediction History →</a>
+      </div>
+    </main>
+  </body>
+</html>

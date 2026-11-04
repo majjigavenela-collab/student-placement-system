@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'dashboard' %}
+    {% include 'navbar.html' %}
+
+    <main class="container">
+      {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <!-- Welcome Banner -->
+      <section class="card welcome-card">
+        <div class="welcome-text">
+          <h1>Welcome, {{ student_name }}! 👋</h1>
+          <p class="subtitle">Here is your comprehensive placement readiness summary, prediction analysis, and skill roadmap.</p>
+        </div>
+        <div class="welcome-actions">
+          <a href="/profile" class="button">Edit Profile</a>
+          <a href="/prediction" class="button button-accent">Predict Placement</a>
+        </div>
+      </section>
+
+      <!-- Key Metrics Row (4 Cards) -->
+      <div class="stats-grid">
+        <!-- Metric 1: Profile Completion Status -->
+        <div class="stat-card">
+          <div class="stat-label">Profile Completion</div>
+          <div class="stat-value">{{ profile_completion.percent }}%</div>
+          <div class="progress-container">
+            <div class="progress-bar" style="width: {{ profile_completion.percent }}%;"></div>
+          </div>
+          <div class="stat-footer">
+            {% if profile_completion.is_complete %}
+              <span class="badge badge-success">✓ Profile Complete</span>
+            {% else %}
+              <span class="badge badge-warning">{{ profile_completion.missing_fields|length }} missing</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Metric 2: Latest Placement Prediction -->
+        <div class="stat-card">
+          <div class="stat-label">Latest Prediction</div>
+          <div class="stat-value">
+            {% if latest_prediction %}
+              {% if latest_prediction.prediction_result == 'Placed' %}
+                <span class="badge badge-success">Placed</span>
+              {% else %}
+                <span class="badge badge-danger">Not Placed</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">Not Tested</span>
+            {% endif %}
+          </div>
+          <div class="stat-footer">
+            {% if latest_prediction %}
+              <small class="text-muted">{{ latest_prediction.created_at }}</small>
+            {% else %}
+              <small><a href="/prediction">Run first prediction →</a></small>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Metric 3: Prediction Probability / Confidence -->
+        <div class="stat-card">
+          <div class="stat-label">Placement Probability</div>
+          <div class="stat-value">
+            {% if latest_prediction %}
+              {{ latest_prediction.probability }}%
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </div>
+          <div class="stat-footer">
+            {% if latest_prediction %}
+              <small class="text-muted">Model confidence score</small>
+            {% else %}
+              <small class="text-muted">Awaiting prediction</small>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Metric 4: Number of Predictions -->
+        <div class="stat-card">
+          <div class="stat-label">Predictions Made</div>
+          <div class="stat-value">{{ total_predictions }}</div>
+          <div class="stat-footer">
+            {% if total_predictions > 0 %}
+              <small><a href="/history">View all in history →</a></small>
+            {% else %}
+              <small class="text-muted">0 predictions recorded</small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Alert if incomplete -->
+      {% if not profile_completion.is_complete %}
+        <div class="card alert alert-warning">
+          <div class="alert-content">
+            <strong>⚠️ Your profile is {{ profile_completion.percent }}% complete:</strong>
+            <span>Missing fields: {{ profile_completion.missing_fields|join(', ') }}.</span>
+          </div>
+          <a href="/profile" class="button button-sm">Complete Profile Now</a>
+        </div>
+      {% endif %}
+
+      <!-- Main Dashboard Grid (2 columns) -->
+      <div class="dashboard-grid">
+        <!-- Left Column: Recent History & Academic Profile -->
+        <div class="grid-col">
+          <!-- Recent Prediction History -->
+          <section class="card">
+            <div class="card-header-flex">
+              <h2>Recent Prediction History</h2>
+              {% if total_predictions > 0 %}
+                <a href="/history" class="link-action">View Full History ({{ total_predictions }}) →</a>
+              {% endif %}
+            </div>
+
+            {% if recent_history %}
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Probability</th>
+                      <th>CGPA</th>
+                      <th>Backlogs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for rec in recent_history %}
+                      <tr>
+                        <td><small>{{ rec.created_at }}</small></td>
+                        <td>
+                          {% if rec.prediction_result == 'Placed' %}
+                            <span class="badge badge-success">Placed</span>
+                          {% else %}
+                            <span class="badge badge-danger">Not Placed</span>
+                          {% endif %}
+                        </td>
+                        <td><strong>{{ rec.probability }}%</strong></td>
+                        <td>{{ rec.cgpa if rec.cgpa is not none else '—' }}</td>
+                        <td>{{ rec.backlogs if rec.backlogs is not none else '0' }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p class="text-muted">No predictions made yet. Click below to run a placement prediction based on your profile.</p>
+              <a href="/prediction" class="button">Run Placement Prediction</a>
+            {% endif %}
+          </section>
+
+          <!-- Academic Profile Snapshot -->
+          <section class="card">
+            <div class="card-header-flex">
+              <h2>Saved Academic Profile</h2>
+              <a href="/profile" class="link-action">Update Profile →</a>
+            </div>
+            {% if profile_data and profile_data.get('cgpa') is not none %}
+              <div class="profile-summary-grid">
+                <div class="profile-item"><span class="label">CGPA:</span> <strong>{{ profile_data.get('cgpa', '—') }}</strong> / 10</div>
+                <div class="profile-item"><span class="label">10th / 12th:</span> <strong>{{ profile_data.get('tenth_percentage', '—') }}% / {{ profile_data.get('twelfth_percentage', '—') }}%</strong></div>
+                <div class="profile-item"><span class="label">Major Projects:</span> <strong>{{ profile_data.get('major_projects', '0') }}</strong></div>
+                <div class="profile-item"><span class="label">Mini Projects:</span> <strong>{{ profile_data.get('mini_projects', '0') }}</strong></div>
+                <div class="profile-item"><span class="label">Internship:</span> <strong>{{ profile_data.get('internship', 'No') }}</strong></div>
+                <div class="profile-item"><span class="label">Hackathon:</span> <strong>{{ profile_data.get('hackathon', 'No') }}</strong></div>
+                <div class="profile-item"><span class="label">Certifications:</span> <strong>{{ profile_data.get('workshops_certifications', '0') }}</strong></div>
+                <div class="profile-item"><span class="label">Active Backlogs:</span> <strong>{{ profile_data.get('backlogs', '0') }}</strong></div>
+              </div>
+            {% else %}
+              <p class="text-muted">You haven't saved your academic profile details yet.</p>
+              <a href="/profile" class="button">Enter Profile Information</a>
+            {% endif %}
+          </section>
+        </div>
+
+        <!-- Right Column: Skill Gap Summary & Recommendations -->
+        <div class="grid-col">
+          <!-- Skill Gap Summary -->
+          <section class="card">
+            <div class="card-header-flex">
+              <h2>Skill Gap Summary</h2>
+              <a href="/skill-gap" class="link-action">Skill Assessment →</a>
+            </div>
+            <p class="note">{{ skill_analysis.summary }}</p>
+            <div class="skill-meter-box">
+              <div class="skill-meter-header">
+                <span>Technical Readiness Average</span>
+                <strong>{{ skill_analysis.average_score }}%</strong>
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar progress-bar-blue" style="width: {{ skill_analysis.average_score }}%;"></div>
+              </div>
+            </div>
+
+            <!-- Skill Badges -->
+            <div class="skill-tags-cloud">
+              {% for sk in skill_analysis.skills %}
+                <span class="skill-tag {% if sk.is_weak %}skill-tag-weak{% else %}skill-tag-strong{% endif %}">
+                  {{ sk.name }}: {{ sk.score }}%
+                  {% if sk.is_weak %}⚠️{% else %}✓{% endif %}
+                </span>
+              {% endfor %}
+            </div>
+          </section>
+
+          <!-- Recommended Skills to Improve -->
+          <section class="card">
+            <div class="card-header-flex">
+              <h2>Recommended Skills to Improve</h2>
+              <a href="/skill-gap" class="link-action">View Full Analysis →</a>
+            </div>
+            {% if skill_analysis.weak_skills %}
+              <p class="subtitle">Focus your preparation on these key skills below the 70% threshold:</p>
+              <ul class="recommendation-list">
+                {% for weak in skill_analysis.weak_skills %}
+                  <li class="recommendation-item">
+                    <div class="rec-title">
+                      <strong>{{ weak.name }}</strong>
+                      <span class="badge badge-warning">{{ weak.score }}% (Target: 70%)</span>
+                    </div>
+                    <p class="rec-desc">{{ weak.recommendation }}</p>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <div class="alert alert-success">
+                <strong>🎉 All skills meet or exceed benchmark!</strong>
+                <p>Your technical skill scores are all above the 70% requirement.</p>
+              </div>
+            {% endif %}
+          </section>
+        </div>
+      </div>
+
+      <!-- Quick Navigation Bar -->
+      <section class="card links-card">
+        <h2>Quick Navigation</h2>
+        <div class="quick-links">
+          <a class="button" href="/profile">Student Profile</a>
+          <a class="button" href="/prediction">Placement Prediction</a>
+          <a class="button" href="/history">Prediction History</a>
+          <a class="button" href="/skill-gap">Skill Gap Analysis</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

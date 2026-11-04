@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Login | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'login' %}
+    {% include 'navbar.html' %}
+
+    <main class="container auth-container">
+      <section class="card auth-card">
+        <h1>Student Login</h1>
+        <p class="subtitle">Access your placement dashboard and predictive analysis.</p>
+
+        {% with messages = get_flashed_messages() %}
+          {% for message in messages %}
+            <div class="flash">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required autocomplete="email" placeholder="student@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+          </div>
+          <button type="submit" class="button button-lg button-block">Login to Account</button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Don't have an account? <a href="/register">Create one here</a></p>
+          <p><a href="/">← Back to home</a></p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

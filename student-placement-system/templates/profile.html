@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Profile | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'profile' %}
+    {% include 'navbar.html' %}
+
+    <main class="container">
+      {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <div class="page-header">
+        <div>
+          <h1>Student Academic &amp; Skill Profile</h1>
+          <p class="subtitle">Enter and update your academic records and skill credentials. These are used directly by the placement prediction model.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/prediction" class="button button-accent">Go to Prediction →</a>
+          <a href="/dashboard" class="button button-secondary">Dashboard</a>
+        </div>
+      </div>
+
+      {% set form_data = form_data|default({}) %}
+      {% set p = profile|default({}) %}
+
+      <section class="card form-card">
+        <form method="POST" action="/profile">
+          <div class="form-section-title">
+            <h3>1. Academic Performance</h3>
+            <p class="text-muted">Enter your verified academic scores.</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cgpa">College CGPA (0.0 – 10.0) <span class="required">*</span></label>
+              <input type="number" id="cgpa" name="cgpa" min="0" max="10" step="0.01" value="{{ form_data.get('cgpa', p.get('cgpa', '')) }}" placeholder="e.g. 8.4" required />
+              <small class="hint">Cumulative Grade Point Average</small>
+            </div>
+
+            <div class="form-group">
+              <label for="backlogs">Active Backlogs <span class="required">*</span></label>
+              <input type="number" id="backlogs" name="backlogs" min="0" step="1" value="{{ form_data.get('backlogs', p.get('backlogs', '0')) }}" placeholder="0" required />
+              <small class="hint">Number of standing arrears (0 if cleared)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="tenth_percentage">10th Standard Percentage (0 – 100) <span class="required">*</span></label>
+              <input type="number" id="tenth_percentage" name="tenth_percentage" min="0" max="100" step="0.1" value="{{ form_data.get('tenth_percentage', p.get('tenth_percentage', '')) }}" placeholder="e.g. 88.5" required />
+              <small class="hint">Secondary board exam score</small>
+            </div>
+
+            <div class="form-group">
+              <label for="twelfth_percentage">12th / Diploma Percentage (0 – 100) <span class="required">*</span></label>
+              <input type="number" id="twelfth_percentage" name="twelfth_percentage" min="0" max="100" step="0.1" value="{{ form_data.get('twelfth_percentage', p.get('twelfth_percentage', '')) }}" placeholder="e.g. 85.0" required />
+              <small class="hint">Higher secondary board exam score</small>
+            </div>
+          </div>
+
+          <div class="form-section-title">
+            <h3>2. Projects &amp; Certifications</h3>
+            <p class="text-muted">Practical project work and industry training.</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="major_projects">Major Projects Completed <span class="required">*</span></label>
+              <input type="number" id="major_projects" name="major_projects" min="0" step="1" value="{{ form_data.get('major_projects', p.get('major_projects', '')) }}" placeholder="e.g. 1" required />
+              <small class="hint">Capstone or full-cycle software/hardware projects</small>
+            </div>
+
+            <div class="form-group">
+              <label for="mini_projects">Mini Projects Completed <span class="required">*</span></label>
+              <input type="number" id="mini_projects" name="mini_projects" min="0" step="1" value="{{ form_data.get('mini_projects', p.get('mini_projects', '')) }}" placeholder="e.g. 2" required />
+              <small class="hint">Coursework or hobby development projects</small>
+            </div>
+
+            <div class="form-group">
+              <label for="workshops_certifications">Workshops / Certifications Count <span class="required">*</span></label>
+              <input type="number" id="workshops_certifications" name="workshops_certifications" min="0" step="1" value="{{ form_data.get('workshops_certifications', p.get('workshops_certifications', '')) }}" placeholder="e.g. 3" required />
+              <small class="hint">Technical workshops or verified course certificates</small>
+            </div>
+          </div>
+
+          <div class="form-section-title">
+            <h3>3. Practical Experience &amp; Competencies</h3>
+            <p class="text-muted">Industry exposure, hackathons, and communication.</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="skills">Technical Skills Score (0 – 10) <span class="required">*</span></label>
+              <input type="number" id="skills" name="skills" min="0" max="10" step="1" value="{{ form_data.get('skills', p.get('skills', '')) }}" placeholder="e.g. 7" required />
+              <small class="hint">Self-assessed overall technical skill rating out of 10</small>
+            </div>
+
+            <div class="form-group">
+              <label for="communication_skill_rating">Communication Skill Rating (0.0 – 5.0) <span class="required">*</span></label>
+              <input type="number" id="communication_skill_rating" name="communication_skill_rating" min="0" max="5" step="0.1" value="{{ form_data.get('communication_skill_rating', p.get('communication_skill_rating', '')) }}" placeholder="e.g. 4.0" required />
+              <small class="hint">Verbal &amp; interview communication rating out of 5</small>
+            </div>
+
+            <div class="form-group">
+              <label for="internship">Internship Experience <span class="required">*</span></label>
+              <select id="internship" name="internship" required>
+                <option value="Yes" {% if form_data.get('internship', p.get('internship', 'Yes')) == 'Yes' %}selected{% endif %}>Yes - Completed Internship</option>
+                <option value="No" {% if form_data.get('internship', p.get('internship')) == 'No' %}selected{% endif %}>No - No Internship Experience</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="hackathon">Hackathon Participation <span class="required">*</span></label>
+              <select id="hackathon" name="hackathon" required>
+                <option value="Yes" {% if form_data.get('hackathon', p.get('hackathon', 'Yes')) == 'Yes' %}selected{% endif %}>Yes - Participated in Hackathons</option>
+                <option value="No" {% if form_data.get('hackathon', p.get('hackathon')) == 'No' %}selected{% endif %}>No - Never Participated</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="button button-lg">💾 Save Profile</button>
+            <a href="/prediction" class="button button-lg button-accent">Proceed to Placement Prediction →</a>
+          </div>
+        </form>
+      </section>
+
+      <div class="bottom-nav">
+        <a href="/dashboard">← Back to Dashboard</a>
+        <a href="/prediction">Go to Placement Prediction →</a>
+      </div>
+    </main>
+  </body>
+</html>

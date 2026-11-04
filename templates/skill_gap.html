@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skill Gap Analysis | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'skill_gap' %}
+    {% include 'navbar.html' %}
+
+    <main class="container">
+      {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <div class="page-header">
+        <div>
+          <h1>Skill Gap Analysis &amp; Recommendations</h1>
+          <p class="subtitle">Evaluate your skill readiness against target recruitment benchmarks, identify weak areas, and follow personalized learning roadmaps.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/prediction" class="button button-accent">Placement Prediction</a>
+          <a href="/dashboard" class="button button-secondary">Dashboard</a>
+        </div>
+      </div>
+
+      <!-- Academic Profile Placement Insights -->
+      {% if profile_insights %}
+        <section class="card profile-insights-card">
+          <h2>Academic &amp; Profile Placement Insights</h2>
+          <p class="text-muted">Based on your saved student profile parameters:</p>
+          <div class="insights-grid">
+            {% for item in profile_insights %}
+              <div class="insight-item {% if item.status == 'good' %}insight-good{% else %}insight-warn{% endif %}">
+                <div class="insight-header">
+                  <strong>{{ item.title }}</strong>
+                  <span class="badge {% if item.status == 'good' %}badge-success{% else %}badge-warning{% endif %}">{{ item.badge }}</span>
+                </div>
+                <p>{{ item.message }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      <!-- Technical Skill Gap Form -->
+      <section class="card form-card">
+        <div class="form-header-flex">
+          <div>
+            <h2>Technical Role Assessment: <strong>Python Developer &amp; SDE</strong></h2>
+            <p class="text-muted">Enter your skill ratings from 0 to 100%. Scores below <strong>70%</strong> are identified as skill gaps requiring targeted practice.</p>
+          </div>
+          {% if skill_scores %}
+            <span class="badge badge-info">Saved in Profile</span>
+          {% endif %}
+        </div>
+
+        <form method="POST" action="/skill-gap">
+          <div class="skills-assessment-grid">
+            <div class="skill-input-row">
+              <div class="skill-info">
+                <label for="python_score"><strong>Python</strong></label>
+                <small class="text-muted">Core syntax, data types, OOP, libraries</small>
+              </div>
+              <div class="skill-input-wrapper">
+                <input
+                  id="python_score"
+                  name="python_score"
+                  class="skill-score"
+                  data-skill="Python"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="{{ skill_scores.python_score|default(60) }}"
+                  required
+                />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="skill-input-row">
+              <div class="skill-info">
+                <label for="sql_score"><strong>SQL</strong></label>
+                <small class="text-muted">Queries, JOINs, aggregations, schema design</small>
+              </div>
+              <div class="skill-input-wrapper">
+                <input
+                  id="sql_score"
+                  name="sql_score"
+                  class="skill-score"
+                  data-skill="SQL"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="{{ skill_scores.sql_score|default(50) }}"
+                  required
+                />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="skill-input-row">
+              <div class="skill-info">
+                <label for="html_css_score"><strong>HTML/CSS</strong></label>
+                <small class="text-muted">Semantic markup, responsive UI, modern styling</small>
+              </div>
+              <div class="skill-input-wrapper">
+                <input
+                  id="html_css_score"
+                  name="html_css_score"
+                  class="skill-score"
+                  data-skill="HTML/CSS"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="{{ skill_scores.html_css_score|default(70) }}"
+                  required
+                />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="skill-input-row">
+              <div class="skill-info">
+                <label for="git_score"><strong>Git/GitHub</strong></label>
+                <small class="text-muted">Version control, branching, PRs, repositories</small>
+              </div>
+              <div class="skill-input-wrapper">
+                <input
+                  id="git_score"
+                  name="git_score"
+                  class="skill-score"
+                  data-skill="Git/GitHub"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="{{ skill_scores.git_score|default(40) }}"
+                  required
+                />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="skill-input-row">
+              <div class="skill-info">
+                <label for="dsa_score"><strong>Data Structures and Algorithms</strong></label>
+                <small class="text-muted">Arrays, trees, graphs, sorting, time complexity</small>
+              </div>
+              <div class="skill-input-wrapper">
+                <input
+                  id="dsa_score"
+                  name="dsa_score"
+                  class="skill-score"
+                  data-skill="Data Structures and Algorithms"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="{{ skill_scores.dsa_score|default(45) }}"
+                  required
+                />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="skill-input-row">
+              <div class="skill-info">
+                <label for="api_score"><strong>REST APIs</strong></label>
+                <small class="text-muted">HTTP methods, endpoint design, JSON handling</small>
+              </div>
+              <div class="skill-input-wrapper">
+                <input
+                  id="api_score"
+                  name="api_score"
+                  class="skill-score"
+                  data-skill="REST APIs"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="{{ skill_scores.api_score|default(35) }}"
+                  required
+                />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="button button-lg">💾 Save &amp; Analyze Skills</button>
+            <button type="button" class="button button-lg button-secondary" onclick="analyzeSkills()">Interactive Instant Check</button>
+          </div>
+        </form>
+
+        <section id="results" class="results-box" aria-live="polite">
+          {% if server_analysis %}
+            {% if server_analysis.weak_skills %}
+              <h2>Skills to Improve (Below 70% Benchmark)</h2>
+              <ul class="recommendation-list">
+                {% for weak in server_analysis.weak_skills %}
+                  <li class="recommendation-item">
+                    <div class="rec-title">
+                      <strong>{{ weak.name }} ({{ weak.score }}%)</strong>
+                      <span class="badge badge-warning">Gap: -{{ weak.gap }}%</span>
+                    </div>
+                    <p class="rec-desc">{{ weak.recommendation }}</p>
+                  </li>
+                {% endfor %}
+              </ul>
+              <p class="note">These recommendations update your dashboard skill gap summary automatically.</p>
+            {% else %}
+              <div class="alert alert-success">
+                <h2>🎉 Great Work!</h2>
+                <p>All entered skills meet or exceed the 70% placement target benchmark.</p>
+              </div>
+            {% endif %}
+          {% endif %}
+        </section>
+      </section>
+
+      <div class="bottom-nav">
+        <a href="/dashboard">← Back to Dashboard</a>
+        <a href="/prediction">Go to Placement Prediction →</a>
+      </div>
+    </main>
+
+    <script>
+      function analyzeSkills() {
+        const recommendations = {
+          Python:
+            "Build a small Python application and practice functions, files, and error handling.",
+          SQL: "Practice SELECT, JOIN, GROUP BY, and database design with a small project.",
+          "HTML/CSS": "Create and style a responsive multi-page website.",
+          "Git/GitHub":
+            "Practice commits, branches, and uploading a project to GitHub.",
+          "Data Structures and Algorithms":
+            "Practice arrays, strings, sorting, and problem solving.",
+          "REST APIs":
+            "Build a Flask API and practice sending and receiving JSON.",
+        };
+
+        const inputs = document.querySelectorAll(".skill-score");
+        const missing = [];
+
+        for (const input of inputs) {
+          const score = Number(input.value);
+          const skill = input.dataset.skill;
+
+          if (input.value === "" || score < 0 || score > 100) {
+            document.getElementById("results").innerHTML =
+              '<div class="flash">Please enter a score from 0 to 100 for every skill.</div>';
+            return;
+          }
+
+          if (score < 70) {
+            missing.push(
+              `<li class="recommendation-item"><div class="rec-title"><strong>${skill} (${score}%)</strong> <span class="badge badge-warning">Needs Practice</span></div><p class="rec-desc">${recommendations[skill]}</p></li>`,
+            );
+          }
+        }
+
+        const results = document.getElementById("results");
+
+        if (missing.length === 0) {
+          results.innerHTML =
+            '<div class="alert alert-success"><h2>🎉 Great work!</h2><p>All entered skills meet the 70% target.</p></div>';
+        } else {
+          results.innerHTML =
+            "<h2>Skills to improve (Live Assessment)</h2><ul class='recommendation-list'>" +
+            missing.join("") +
+            "</ul>" +
+            "<p class='note'>Tip: Click <strong>Save &amp; Analyze Skills</strong> to save these scores to your dashboard profile.</p>";
+        }
+      }
+    </script>
+  </body>
+</html>

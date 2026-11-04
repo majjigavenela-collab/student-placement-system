@@ -1,0 +1,25 @@
+<header class="app-header">
+  <div class="header-container">
+    <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="brand-link">
+      <span class="brand-icon">🎓</span>
+      <span class="brand-text">Student Placement System</span>
+    </a>
+    <nav class="nav-menu">
+      {% if session.get('user_id') %}
+        <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="/profile" class="nav-link {% if active_page == 'profile' %}active{% endif %}">Profile</a>
+        <a href="/prediction" class="nav-link {% if active_page == 'prediction' %}active{% endif %}">Prediction</a>
+        <a href="/history" class="nav-link {% if active_page == 'history' %}active{% endif %}">History</a>
+        <a href="/skill-gap" class="nav-link {% if active_page == 'skill_gap' %}active{% endif %}">Skill Gap</a>
+        <div class="nav-user-group">
+          <span class="nav-user-name" title="{{ session.get('user_name') }}">👤 {{ session.get('user_name', 'Student') }}</span>
+          <a href="/logout" class="nav-btn-logout">Logout</a>
+        </div>
+      {% else %}
+        <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">Home</a>
+        <a href="/login" class="nav-link {% if active_page == 'login' %}active{% endif %}">Log in</a>
+        <a href="/register" class="nav-link nav-btn-primary {% if active_page == 'register' %}active{% endif %}">Register</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>

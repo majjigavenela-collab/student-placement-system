@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prediction History | Student Placement System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'history' %}
+    {% include 'navbar.html' %}
+
+    <main class="container">
+      {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <div class="page-header">
+        <div>
+          <h1>Placement Prediction History</h1>
+          <p class="subtitle">Review your past placement predictions, calculated probabilities, and profile snapshots.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/prediction" class="button">+ New Prediction</a>
+          <a href="/dashboard" class="button button-secondary">Back to Dashboard</a>
+        </div>
+      </div>
+
+      {% if history_records %}
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Predictions</div>
+            <div class="stat-value">{{ history_records|length }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Latest Result</div>
+            <div class="stat-value">
+              {% if history_records[0].prediction_result == 'Placed' %}
+                <span class="badge badge-success">Placed</span>
+              {% else %}
+                <span class="badge badge-danger">Not Placed</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Latest Probability</div>
+            <div class="stat-value">{{ history_records[0].probability }}%</div>
+          </div>
+        </div>
+
+        <section class="card table-card">
+          <h2>All Past Predictions</h2>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date &amp; Time</th>
+                  <th>Prediction</th>
+                  <th>Probability</th>
+                  <th>CGPA</th>
+                  <th>10th / 12th %</th>
+                  <th>Projects (Maj/Min)</th>
+                  <th>Internship</th>
+                  <th>Hackathon</th>
+                  <th>Backlogs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for record in history_records %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="text-nowrap">{{ record.created_at }}</td>
+                    <td>
+                      {% if record.prediction_result == 'Placed' %}
+                        <span class="badge badge-success">Placed</span>
+                      {% else %}
+                        <span class="badge badge-danger">Not Placed</span>
+                      {% endif %}
+                    </td>
+                    <td><strong>{{ record.probability }}%</strong></td>
+                    <td>{{ record.cgpa if record.cgpa is not none else '—' }}</td>
+                    <td>{{ record.tenth_percentage }}% / {{ record.twelfth_percentage }}%</td>
+                    <td>{{ record.major_projects }} / {{ record.mini_projects }}</td>
+                    <td>
+                      {% if record.internship == 'Yes' %}
+                        <span class="text-success">Yes</span>
+                      {% else %}
+                        <span class="text-muted">No</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if record.hackathon == 'Yes' %}
+                        <span class="text-success">Yes</span>
+                      {% else %}
+                        <span class="text-muted">No</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if record.backlogs == 0 %}
+                        <span class="text-success">0</span>
+                      {% else %}
+                        <span class="badge badge-warning">{{ record.backlogs }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      {% else %}
+        <section class="card empty-state">
+          <div class="empty-icon">📊</div>
+          <h2>No Predictions Recorded Yet</h2>
+          <p>You haven't run any placement predictions yet. Enter or update your student profile and run your first placement prediction to see results here.</p>
+          <div class="empty-actions">
+            <a href="/prediction" class="button">Run Placement Prediction</a>
+            <a href="/profile" class="button button-secondary">Update Profile</a>
+          </div>
+        </section>
+      {% endif %}
+
+      <div class="bottom-nav">
+        <a href="/dashboard">← Back to Dashboard</a>
+        <a href="/skill-gap">Go to Skill Gap Analysis →</a>
+      </div>
+    </main>
+  </body>
+</html>

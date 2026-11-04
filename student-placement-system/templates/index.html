@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Placement Prediction System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    {% set active_page = 'home' %}
+    {% include 'navbar.html' %}
+
+    <main class="container">
+      <section class="card hero-card">
+        <h1>Student Placement Prediction System</h1>
+        <p class="hero-subtitle">
+          Empowering students with machine learning-driven campus placement predictions, academic profile tracking, and targeted skill gap analysis.
+        </p>
+
+        {% if session.get('user_id') %}
+          <div class="hero-actions">
+            <a class="button button-lg button-accent" href="/dashboard">Open My Dashboard</a>
+            <a class="button button-lg button-secondary" href="/prediction">Placement Prediction</a>
+          </div>
+        {% else %}
+          <div class="hero-actions">
+            <a class="button button-lg button-accent" href="/login">Student Login</a>
+            <a class="button button-lg button-secondary" href="/register">Create Student Account</a>
+          </div>
+        {% endif %}
+      </section>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">👤</div>
+          <h3>Student Profile</h3>
+          <p>Store your CGPA, projects, certifications, internships, hackathon participation, and academic records securely.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>ML Placement Prediction</h3>
+          <p>Trained machine learning models assess your placement likelihood and calculate confidence probabilities.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>Prediction History</h3>
+          <p>Track your past predictions over time to observe how improving your credentials increases placement probability.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3>Skill Gap Analysis</h3>
+          <p>Benchmark your technical abilities, pinpoint weak areas, and get personalized recommendations to succeed.</p>
+        </div>
+      </div>
+
+      <p class="note text-center">Academic demonstration system. Placement predictions are statistical estimates based on benchmark datasets.</p>
+    </main>
+  </body>
+</html>
